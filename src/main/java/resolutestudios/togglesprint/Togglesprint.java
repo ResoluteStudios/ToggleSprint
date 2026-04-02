@@ -27,6 +27,6 @@ public class Togglesprint implements ClientModInitializer {
 			}
 		});
 
-		LOGGER.info("Togglesprint Initialized!");
+		LOGGER.info("[Togglesprint] Has been initialized!");
 	}
 }
