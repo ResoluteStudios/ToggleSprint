@@ -1,0 +1,6 @@
+{
+  "category.togglesprint.togglesprint": "Togglesprint",
+  "key.togglesprint.toggle": "Toggle Sprint",
+  "text.togglesprint.enabled": "Sprint Toggled: [Enabled]",
+  "text.togglesprint.disabled": "Sprint Toggled: [Disabled]"
+}

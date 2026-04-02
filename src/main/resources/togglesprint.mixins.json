@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "resolutestudios.togglesprint.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"KeyboardMixin",
+		"InGameHudMixin",
+		"ClientPlayerEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

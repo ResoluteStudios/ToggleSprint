@@ -1,0 +1,147 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'maven-publish'
+}
+
+// Run version increment during configuration ONLY if executing a 'build'
+if (gradle.startParameter.taskNames.contains("build")) {
+	def propsFile = file('gradle.properties')
+	def propsText = propsFile.text
+	def matcher = (propsText =~ /mod_version=(1)\.(4)\.(\d+)/)
+	if (matcher.find()) {
+		def major = matcher.group(1)
+		def minor = matcher.group(2)
+		def patch = matcher.group(3).toInteger() + 1
+		def newVersion = "mod_version=${major}.${minor}.${patch}"
+		propsText = propsText.replaceFirst(/mod_version=1\.4\.\d+/, newVersion)
+		propsFile.write(propsText)
+		
+		// Override eagerly so the rest of the build script uses it!
+		project.ext.mod_version = "${major}.${minor}.${patch}"
+		println "Pre-Incremented version to ${major}.${minor}.${patch}"
+	}
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	// Add repositories to retrieve artifacts from in here.
+	// You should only use this when depending on other mods because
+	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+	// for more information about repositories.
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	
+}
+
+processResources {
+	inputs.properties([
+		"version": project.version,
+		"id": project.mod_id,
+		"name": project.mod_name,
+		"description": project.mod_description,
+		"authors": project.mod_authors,
+		"homepage": project.mod_homepage,
+		"sources": project.mod_sources,
+		"license": project.mod_license,
+		"environment": project.mod_environment
+	])
+
+	filesMatching("fabric.mod.json") {
+		expand inputs.properties
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task If it is present.
+	// If you remove this line, sources will not be generated.
+	// withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	inputs.property "id", project.mod_id
+
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.id}"}
+	}
+}
+
+task deployMod {
+	group = "deployment"
+	description = "Copies the newly built mod jar to the Modrinth profile folder, clearing old versions"
+	dependsOn tasks.named('remapJar')
+	def archivesBaseNameStr = project.archives_base_name
+	doLast {
+		// Get the path to the Modrinth profile folder
+		// This is a common path, but it might be different on some systems
+		// You can change this to the path to your Modrinth profile folder
+		// if it is different
+		def targetDir = "${System.getenv('APPDATA')}/ModrinthApp/profiles/Minecraft 1.21.11 (1)/mods"
+		def jarTask = tasks.named('remapJar').get()
+		def jarFile = jarTask.archiveFile.get().asFile
+
+		if (file(targetDir).exists()) {
+			file(targetDir).listFiles().each { f ->
+				if (f.name.startsWith(archivesBaseNameStr) && f.name.endsWith(".jar")) {
+					println "Deleting old mod: ${f.name}"
+					f.delete()
+				}
+			}
+			println "Copying ${jarFile.name} to ${targetDir}"
+			copy {
+				from jarFile
+				into targetDir
+			}
+		} else {
+			println "Target directory ${targetDir} does not exist, skipping copy."
+		}
+	}
+}
+
+// configure the maven publication
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	repositories {
+	}
+}
+
+tasks.named('build').configure {
+	dependsOn deployMod
+}
+
+task cleanLibs(type: Delete) {
+	group = "build"
+	description = "Clears the build/libs folder before the new jar is made"
+	delete "build/libs"
+}
+
+tasks.named('jar').configure {
+	dependsOn cleanLibs
+}
