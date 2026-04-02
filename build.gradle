@@ -96,7 +96,7 @@ task deployMod {
 		// Get the path to the Modrinth profile folder
 		// This is a common path, but it might be different on some systems
 		// You can change this to the path to your Modrinth profile folder
-		// if it is different
+		// if it is different. also why are you down here :|
 		def targetDir = "${System.getenv('APPDATA')}/ModrinthApp/profiles/Minecraft 1.21.11 (1)/mods"
 		def jarTask = tasks.named('remapJar').get()
 		def jarFile = jarTask.archiveFile.get().asFile
