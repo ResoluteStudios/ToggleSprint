@@ -16,8 +16,27 @@ public class Togglesprint implements ClientModInitializer {
 	public static final KeyBinding toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.togglesprint.toggle",
 			GLFW.GLFW_KEY_LEFT_CONTROL,
-			new KeyBinding.Category(Identifier.of("togglesprint:togglesprint"))
+			new KeyBinding.Category(id("togglesprint", "togglesprint"))
 	));
+
+	/**
+	 * Helper method to create an Identifier across Minecraft versions 1.20 - 1.21.x.
+	 * 1.21+ uses Identifier.of(), 1.20- uses Identifier() constructor.
+	 */
+	public static Identifier id(String namespace, String path) {
+		try {
+			// Try 1.21+ static factory method: Identifier.of(String, String)
+			return (Identifier) Identifier.class.getMethod("of", String.class, String.class).invoke(null, namespace, path);
+		} catch (Exception e1) {
+			try {
+				// Fallback to 1.20- constructor: new Identifier(String, String)
+				return (Identifier) Identifier.class.getConstructor(String.class, String.class).newInstance(namespace, path);
+			} catch (Exception e2) {
+				throw new RuntimeException("Failed to create Identifier for " + namespace + ":" + path, e2);
+			}
+		}
+	}
+
 
 	@Override
 	public void onInitializeClient() {
