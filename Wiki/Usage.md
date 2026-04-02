@@ -18,6 +18,6 @@ The toggle sprint logic adheres to the following rules:
 ## Customization
 
 To change the toggle keybind, navigate to:
-1.  **Options** > **Controls** > **Key Binds**.
-2.  Scroll to the **togglesprint:togglesprint** category.
-3.  Assign a new key for **key.togglesprint.toggle**.
+1. **Options** > **Controls** > **Key Binds**.
+2. Scroll to the **togglesprint:togglesprint** category.
+3. Assign a new key for **key.togglesprint.toggle**.

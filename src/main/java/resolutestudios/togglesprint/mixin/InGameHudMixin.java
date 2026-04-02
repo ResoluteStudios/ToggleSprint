@@ -15,13 +15,7 @@ public class InGameHudMixin {
 		int x = 2;
 		int y = 2;
 		
-		String fullText;
-		if (SprintManager.toggleActive) {
-			fullText = "§7Toggle Sprint is §aEnabled§7.";
-		} else {
-			fullText = "§7Toggle Sprint is §7Disabled§7.";
-		}
-		
-		context.drawText(net.minecraft.client.MinecraftClient.getInstance().textRenderer, fullText, x, y, 0xFFFFFF, true);
+		String key = SprintManager.toggleActive ? "text.togglesprint.enabled" : "text.togglesprint.disabled";
+		context.drawText(net.minecraft.client.MinecraftClient.getInstance().textRenderer, net.minecraft.text.Text.translatable(key), x, y, 0xFFFFFF, true);
 	}
 }
